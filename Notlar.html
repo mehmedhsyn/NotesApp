@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renkli Not Defteri</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 700px; margin: auto; background: #f5f5f5; padding: 20px; }
+        h1 { text-align: center; color: #333; }
+        input, textarea { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .note { padding: 10px; margin: 10px 0; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+        .note:hover { opacity: 0.8; }
+        .note-content { display: none; margin-top: 10px; padding: 10px; background: white; border-radius: 5px; }
+        .word-count { font-size: 14px; color: #555; margin-top: 5px; }
+        .edit-btn, .delete-btn { margin-top: 5px; padding: 5px 10px; cursor: pointer; border-radius: 3px; border: none; }
+        .edit-btn { background: #28a745; color: white; }
+        .delete-btn { background: #dc3545; color: white; }
+        .stats { background: white; padding: 10px; border-radius: 5px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>📒 Renkli Not Defteri</h1>
+    
+    <input type="text" id="title" placeholder="Başlık">
+    <textarea id="content" placeholder="İçerik"></textarea>
+    <button onclick="addNote()">📌 Not Ekle</button>
+    
+    <h2>📝 Notlarım</h2>
+    <div id="notes"></div>
+
+    <h2>📊 Analiz</h2>
+    <div class="stats" id="stats"></div>
+
+    <script>
+        let notes = [];
+
+        function loadNotes() {
+            let savedNotes = localStorage.getItem('notes');
+            if (savedNotes) {
+                notes = JSON.parse(savedNotes);
+            }
+            displayNotes();
+        }
+
+        function displayNotes() {
+            let notesDiv = document.getElementById('notes');
+            notesDiv.innerHTML = '';
+
+            notes.forEach((note, index) => {
+                let div = document.createElement('div');
+                
+                // 🎨 Eskisi gibi maviden koyu maviye renk geçişi
+                let shade = 255 - (index * 20);
+                div.className = 'note';
+                div.style.background = `rgb(${shade}, ${shade + 50}, 255)`;
+                
+                div.innerHTML = `<h3>${note.title}</h3>`;
+                
+                let contentDiv = document.createElement('div');
+                contentDiv.className = 'note-content';
+                contentDiv.innerHTML = `
+                    <p class="word-count">📌 Bu notta <b>${note.wordCount}</b> kelime var</p>
+                    <textarea id="edit-${index}" rows="4" oninput="updateWordCount(${index})">${note.content}</textarea>
+                    <br>
+                    <button class="edit-btn" onclick="saveEdit(${index})">💾 Kaydet</button>
+                    <button class="delete-btn" onclick="deleteNote(${index})">❌ Sil</button>
+                `;
+
+                div.appendChild(contentDiv);
+                div.addEventListener("click", (e) => {
+                    if (e.target.tagName !== "BUTTON" && e.target.tagName !== "TEXTAREA") {
+                        contentDiv.style.display = contentDiv.style.display === 'block' ? 'none' : 'block';
+                    }
+                });
+
+                notesDiv.appendChild(div);
+            });
+
+            updateStats();
+        }
+
+        function addNote() {
+            let title = document.getElementById('title').value.trim();
+            let content = document.getElementById('content').value.trim();
+            if (title === '' || content === '') {
+                alert('Başlık ve içerik boş olamaz!');
+                return;
+            }
+
+            let wordCount = content.split(/\s+/).length;
+            let date = new Date().toLocaleDateString("tr-TR");
+
+            notes.unshift({ title, content, date, wordCount });
+            localStorage.setItem('notes', JSON.stringify(notes));
+
+            document.getElementById('title').value = '';
+            document.getElementById('content').value = '';
+            displayNotes();
+        }
+
+        function saveEdit(index) {
+            let newContent = document.getElementById(`edit-${index}`).value;
+            notes[index].content = newContent;
+            updateWordCount(index);
+            localStorage.setItem('notes', JSON.stringify(notes));
+        }
+
+        function updateWordCount(index) {
+            let newContent = document.getElementById(`edit-${index}`).value;
+            notes[index].wordCount = newContent.trim() ? newContent.split(/\s+/).length : 0;
+            document.querySelector(`#edit-${index}`).previousElementSibling.innerHTML = `📌 Bu notta <b>${notes[index].wordCount}</b> kelime var`;
+        }
+
+        function deleteNote(index) {
+            notes.splice(index, 1);
+            localStorage.setItem('notes', JSON.stringify(notes));
+            displayNotes();
+        }
+
+        function updateStats() {
+            let totalWords = notes.reduce((sum, note) => sum + note.wordCount, 0);
+            let notesByDate = {};
+            notes.forEach(note => {
+                if (!notesByDate[note.date]) notesByDate[note.date] = 0;
+                notesByDate[note.date] += note.wordCount;
+            });
+
+            let mostWordsDate = Object.keys(notesByDate).reduce((a, b) => notesByDate[a] > notesByDate[b] ? a : b, '');
+            let lastEdited = notes.length ? notes[notes.length - 1].date : 'Henüz not eklenmedi';
+
+            document.getElementById('stats').innerHTML = `
+                <p>📌 Toplam Not Sayısı: <b>${notes.length}</b></p>
+                <p>✍️ Toplam Kelime Sayısı: <b>${totalWords}</b></p>
+                <p>📅 En Çok Yazılan Gün: <b>${mostWordsDate || 'Henüz veri yok'}</b></p>
+                <p>🕒 Son Düzenleme: <b>${lastEdited}</b></p>
+            `;
+        }
+
+        loadNotes();
+    </script>
+</body>
+</html>

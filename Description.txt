@@ -1,0 +1,20 @@
+📄 Project Description: Interactive Note-Taking Web App
+This is a simple yet powerful note-taking web application built using HTML, CSS, and JavaScript, with localStorage integration for data persistence. The app allows users to create, edit, and delete notes while automatically analyzing word count and tracking activity over time.
+
+🌟 Features:
+✅ Add and Edit Notes – Users can create and modify notes dynamically.
+✅ Word Count Tracking – Each note displays its word count, updating in real-time.
+✅ Color-Coded Notes – Notes gradually change color from light blue to dark blue for better visual organization.
+✅ Interactive Note Display – Clicking a note reveals its full content, allowing edits.
+✅ Data Persistence – Notes are stored using localStorage, ensuring they remain even after closing the browser.
+✅ Statistics & Analysis – The app provides insights such as:
+
+Total number of notes
+Total word count
+Most active writing day
+Last modified date
+📌 Technologies Used:
+HTML – For structuring the content
+CSS – For styling and user-friendly UI
+JavaScript (Vanilla JS) – For dynamic interactions and local data handling
+This application is lightweight, completely client-side, and does not require a backend—making it portable and easy to use across different devices.
